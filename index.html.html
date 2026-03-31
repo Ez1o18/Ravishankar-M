@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ravishankar M | Security Engineer</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00ff41;
+    --green-dim: #00c032;
+    --green-dark: #005c18;
+    --green-glow: rgba(0,255,65,0.15);
+    --green-glow-strong: rgba(0,255,65,0.35);
+    --bg: #020d06;
+    --bg2: #060f08;
+    --bg3: #0a1a0d;
+    --card: #0d1f11;
+    --card2: #0f2314;
+    --border: rgba(0,255,65,0.2);
+    --border-bright: rgba(0,255,65,0.6);
+    --text: #c8ffd6;
+    --text-dim: #6bbf7a;
+    --red: #ff3333;
+    --amber: #ffcc00;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed; width: 12px; height: 12px;
+    background: var(--green); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s, background 0.2s;
+    box-shadow: 0 0 10px var(--green), 0 0 20px var(--green);
+  }
+  .cursor-ring {
+    position: fixed; width: 32px; height: 32px;
+    border: 1px solid var(--green); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: all 0.12s ease-out;
+    opacity: 0.6;
+  }
+
+  /* Matrix rain canvas */
+  #matrix {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; opacity: 0.035;
+    pointer-events: none;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    pointer-events: none; opacity: 0.4;
+  }
+
+  /* Scanlines */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 2;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+  }
+
+  main { position: relative; z-index: 10; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 1rem 3rem;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(180deg, rgba(2,13,6,0.98) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem; font-weight: 900;
+    color: var(--green);
+    letter-spacing: 0.3em;
+    text-shadow: 0 0 20px var(--green);
+  }
+  .nav-logo span { color: var(--text-dim); }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem; color: var(--text-dim);
+    text-decoration: none; letter-spacing: 0.15em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--green); text-shadow: 0 0 10px var(--green); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 8rem 3rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+  }
+  .hero-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+  }
+  .hero-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem; color: var(--green);
+    letter-spacing: 0.3em; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 0.8rem;
+  }
+  .hero-badge::before {
+    content: ''; display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+    animation: blink 1.2s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  .hero h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 900;
+    line-height: 1.05;
+    color: #fff;
+    text-shadow: 0 0 40px var(--green-glow-strong);
+    margin-bottom: 0.5rem;
+  }
+  .hero h1 span {
+    color: var(--green);
+    text-shadow: 0 0 30px var(--green), 0 0 60px var(--green);
+  }
+  .hero-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem; color: var(--text-dim);
+    letter-spacing: 0.2em; margin-bottom: 1.5rem;
+  }
+  .hero-title .bracket { color: var(--green); }
+  .hero-desc {
+    font-size: 1.05rem; line-height: 1.8;
+    color: var(--text-dim); max-width: 520px;
+    margin-bottom: 2rem;
+  }
+  .hero-cta {
+    display: flex; gap: 1rem; flex-wrap: wrap;
+  }
+  .btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem; letter-spacing: 0.15em;
+    padding: 0.8rem 1.8rem;
+    border: 1px solid var(--green);
+    background: transparent; color: var(--green);
+    cursor: none; text-decoration: none;
+    transition: all 0.25s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+  .btn:hover {
+    background: var(--green); color: var(--bg);
+    box-shadow: 0 0 30px var(--green);
+  }
+  .btn-ghost { border-color: var(--border-bright); color: var(--text-dim); }
+  .btn-ghost:hover { background: var(--green-glow); color: var(--green); border-color: var(--green); }
+
+  /* Terminal card */
+  .terminal-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(0,255,65,0.08), inset 0 0 40px rgba(0,0,0,0.4);
+  }
+  .terminal-bar {
+    background: var(--bg3); padding: 0.7rem 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .terminal-bar span { font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: var(--text-dim); margin-left: 0.5rem; }
+  .terminal-body { padding: 1.5rem; font-family: 'Share Tech Mono', monospace; font-size: 0.78rem; line-height: 2; }
+  .t-line { display: flex; gap: 0.5rem; }
+  .t-prompt { color: var(--green); }
+  .t-cmd { color: #fff; }
+  .t-out { color: var(--text-dim); }
+  .t-highlight { color: var(--green); }
+  .t-red { color: var(--red); }
+  .t-amber { color: var(--amber); }
+  .t-cursor { display: inline-block; width: 8px; height: 14px; background: var(--green); animation: blink 1s infinite; vertical-align: middle; }
+
+  /* SECTION COMMONS */
+  section { padding: 6rem 3rem; }
+  .section-inner { max-width: 1200px; margin: 0 auto; }
+  .section-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem; color: var(--green);
+    letter-spacing: 0.4em; margin-bottom: 0.5rem;
+  }
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 900; color: #fff;
+    text-shadow: 0 0 30px var(--green-glow);
+    margin-bottom: 0.5rem;
+  }
+  .section-title span { color: var(--green); }
+  .section-line {
+    width: 60px; height: 2px;
+    background: linear-gradient(90deg, var(--green), transparent);
+    margin-bottom: 3rem;
+  }
+
+  /* ABOUT / STATS */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;
+    margin-bottom: 4rem;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.5rem; text-align: center;
+    position: relative; overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  }
+  .stat-card:hover { border-color: var(--green); box-shadow: 0 0 30px var(--green-glow); }
+  .stat-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--green), transparent);
+  }
+  .stat-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 2.5rem; font-weight: 900;
+    color: var(--green);
+    text-shadow: 0 0 20px var(--green);
+    display: block;
+  }
+  .stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem; color: var(--text-dim);
+    letter-spacing: 0.2em; margin-top: 0.3rem;
+  }
+
+  /* SKILLS */
+  .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .skill-group {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .skill-group:hover { border-color: var(--green-dim); box-shadow: 0 0 20px var(--green-glow); }
+  .skill-group-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem; color: var(--green);
+    letter-spacing: 0.2em; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .skill-group-title::before { content: '//'; color: var(--green-dark); }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .skill-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem; color: var(--text-dim);
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--border);
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+  .skill-tag:hover { border-color: var(--green); color: var(--green); background: var(--green-glow); }
+
+  /* CERTIFICATIONS */
+  .certs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .cert-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 0; overflow: hidden;
+    text-decoration: none;
+    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    display: flex; flex-direction: column;
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  }
+  .cert-card:hover {
+    border-color: var(--green);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,255,65,0.15);
+  }
+  .cert-card-top {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .cert-card-top::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--green), transparent);
+  }
+  .cert-issuer {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem; color: var(--text-dim);
+    letter-spacing: 0.25em; margin-bottom: 0.5rem;
+  }
+  .cert-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem; font-weight: 700;
+    color: var(--green);
+    text-shadow: 0 0 15px var(--green-glow-strong);
+    line-height: 1.2; margin-bottom: 0.3rem;
+  }
+  .cert-full {
+    font-size: 0.8rem; color: var(--text);
+    font-family: 'Rajdhani', sans-serif; font-weight: 600;
+  }
+  .cert-card-bottom {
+    padding: 1rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .cert-date {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem; color: var(--text-dim);
+  }
+  .cert-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem; color: var(--green);
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--green);
+    letter-spacing: 0.1em;
+  }
+  .cert-merit { border-color: var(--amber); color: var(--amber); }
+  .cert-link-icon {
+    position: absolute; top: 1rem; right: 1rem;
+    font-size: 0.7rem; color: var(--border-bright);
+    font-family: 'Share Tech Mono', monospace;
+    transition: color 0.2s;
+  }
+  .cert-card:hover .cert-link-icon { color: var(--green); }
+
+  /* VULNERABILITIES / BUGS */
+  .bugs-section { background: var(--bg2); }
+  .bugs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 3rem; }
+  .bug-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.2rem;
+    position: relative; overflow: hidden;
+    transition: all 0.3s;
+  }
+  .bug-card:hover { border-color: var(--red); box-shadow: 0 0 20px rgba(255,51,51,0.15); }
+  .bug-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--red), transparent);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s;
+  }
+  .bug-card:hover::after { transform: scaleX(1); }
+  .bug-icon { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .bug-name {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem; color: #fff;
+    letter-spacing: 0.05em;
+  }
+  .bug-severity {
+    font-size: 0.6rem;
+    font-family: 'Share Tech Mono', monospace;
+    margin-top: 0.3rem;
+    color: var(--text-dim);
+  }
+  .sev-critical { color: var(--red); }
+  .sev-high { color: #ff7700; }
+  .sev-medium { color: var(--amber); }
+
+  /* HOF */
+  .hof-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 2rem; }
+  .hof-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    display: flex; align-items: center; gap: 1.5rem;
+    transition: all 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .hof-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+  }
+  .hof-card:hover { border-color: var(--green); box-shadow: 0 0 25px var(--green-glow); }
+  .hof-icon { font-size: 2rem; flex-shrink: 0; }
+  .hof-org {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem; font-weight: 700;
+    color: var(--green); margin-bottom: 0.3rem;
+  }
+  .hof-desc {
+    font-size: 0.85rem; color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
+  }
+
+  /* FUTURE TARGETS */
+  .targets-section { background: var(--bg2); }
+  .targets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .target-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    position: relative; overflow: hidden;
+    opacity: 0.75;
+    transition: all 0.3s;
+  }
+  .target-card:hover { opacity: 1; border-color: var(--amber); box-shadow: 0 0 20px rgba(255,204,0,0.1); }
+  .target-card::before {
+    content: '[ LOCKED ]';
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem; color: var(--amber);
+    letter-spacing: 0.2em;
+    display: block; margin-bottom: 0.8rem;
+  }
+  .target-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--amber);
+    margin-bottom: 0.3rem;
+  }
+  .target-full { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem; }
+  .target-desc { font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: var(--text-dim); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem;
+    text-align: center;
+    background: var(--bg);
+  }
+  .footer-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.5rem; font-weight: 900;
+    color: var(--green);
+    text-shadow: 0 0 30px var(--green);
+    margin-bottom: 1rem;
+  }
+  .footer-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem; color: var(--text-dim);
+    letter-spacing: 0.2em;
+  }
+  .footer-text span { color: var(--green); }
+
+  /* GLITCH EFFECT */
+  @keyframes glitch {
+    0%,100% { clip-path: inset(0 0 100% 0); transform: translateX(0); }
+    20% { clip-path: inset(20% 0 60% 0); transform: translateX(-4px); }
+    40% { clip-path: inset(50% 0 30% 0); transform: translateX(4px); }
+    60% { clip-path: inset(10% 0 80% 0); transform: translateX(-2px); }
+    80% { clip-path: inset(80% 0 5% 0); transform: translateX(2px); }
+  }
+
+  .glitch {
+    position: relative;
+    animation: none;
+  }
+  .glitch:hover::before, .glitch:hover::after {
+    content: attr(data-text);
+    position: absolute; top: 0; left: 0;
+    color: var(--green);
+    animation: glitch 0.4s infinite;
+  }
+  .glitch:hover::before { color: #ff0040; mix-blend-mode: screen; }
+  .glitch:hover::after { color: #00ffff; mix-blend-mode: screen; animation-delay: 0.05s; }
+
+  /* Divider */
+  .hex-divider {
+    text-align: center; padding: 2rem 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem; color: var(--border-bright);
+    letter-spacing: 0.5em;
+  }
+
+  /* Animations */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in { animation: fadeInUp 0.6s ease both; }
+  .fade-in-2 { animation: fadeInUp 0.6s 0.15s ease both; }
+  .fade-in-3 { animation: fadeInUp 0.6s 0.3s ease both; }
+
+  @keyframes typing {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .hero-inner { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .skills-grid, .certs-grid, .targets-grid { grid-template-columns: repeat(2, 1fr); }
+    .bugs-grid { grid-template-columns: repeat(2, 1fr); }
+    .hof-grid { grid-template-columns: 1fr; }
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 4rem 1.5rem; }
+    .hero { padding: 7rem 1.5rem 3rem; }
+  }
+  @media (max-width: 600px) {
+    .stats-grid, .skills-grid, .certs-grid, .targets-grid, .bugs-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <div class="nav-logo">RAVI<span>_</span>M</div>
+  <div class="nav-links">
+    <a href="#about">// about</a>
+    <a href="#certs">// certs</a>
+    <a href="#bugs">// findings</a>
+    <a href="#targets">// roadmap</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<section class="hero" id="about">
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="fade-in">
+      <div class="hero-badge">ONLINE &amp; OPERATIONAL</div>
+      <h1 class="glitch" data-text="Ravishankar M">Ravishankar<br><span>M</span></h1>
+      <div class="hero-title"><span class="bracket">[</span>&nbsp;Security Engineer · Ethical Hacker · Bug Hunter&nbsp;<span class="bracket">]</span></div>
+      <p class="hero-desc">
+        Passionate cybersecurity professional with hands-on expertise in web application and network penetration testing. CEH Master certified, active bug bounty hunter recognized by Canon, CERT-In, and NCIIPC.
+      </p>
+      <div class="hero-cta">
+        <a href="#certs" class="btn">VIEW CERTIFICATIONS</a>
+        <a href="#bugs" class="btn btn-ghost">BUG FINDINGS</a>
+      </div>
+    </div>
+
+    <div class="fade-in-2">
+      <div class="terminal-card">
+        <div class="terminal-bar">
+          <div class="terminal-dot" style="background:#ff5f57"></div>
+          <div class="terminal-dot" style="background:#febc2e"></div>
+          <div class="terminal-dot" style="background:#28c840"></div>
+          <span>ravishankar@kali ~ $</span>
+        </div>
+        <div class="terminal-body">
+          <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">whoami</span></div>
+          <div class="t-line"><span class="t-out">&gt; <span class="t-highlight">Ravishankar M</span> // Security Engineer</span></div>
+          <div class="t-line" style="margin-top:0.5rem"><span class="t-prompt">$</span><span class="t-cmd">cat specialization.txt</span></div>
+          <div class="t-line"><span class="t-out">&gt; VAPT · Red Team · OSINT</span></div>
+          <div class="t-line"><span class="t-out">&gt; Web AppSec · Network Pen Test</span></div>
+          <div class="t-line" style="margin-top:0.5rem"><span class="t-prompt">$</span><span class="t-cmd">ls ./tools/</span></div>
+          <div class="t-line"><span class="t-out">&gt; <span class="t-highlight">Burp Suite</span> · Nmap · Metasploit</span></div>
+          <div class="t-line"><span class="t-out">&gt; Nessus · Nuclei · Subfinder</span></div>
+          <div class="t-line" style="margin-top:0.5rem"><span class="t-prompt">$</span><span class="t-cmd">cat recognitions.log</span></div>
+          <div class="t-line"><span class="t-out">&gt; <span class="t-amber">Canon</span> · <span class="t-highlight">CERT-In HoF</span> · <span class="t-highlight">NCIIPC</span></span></div>
+          <div class="t-line" style="margin-top:0.5rem"><span class="t-prompt">$</span> <span class="t-cursor"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section style="padding: 2rem 3rem 5rem;">
+  <div class="section-inner">
+    <div class="stats-grid fade-in">
+      <div class="stat-card">
+        <span class="stat-num">6+</span>
+        <span class="stat-label">CERTIFICATIONS</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">8+</span>
+        <span class="stat-label">BUG CLASSES FOUND</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">3</span>
+        <span class="stat-label">HOF RECOGNITIONS</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">∞</span>
+        <span class="stat-label">CURIOSITY LEVEL</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section style="padding: 0 3rem 6rem;">
+  <div class="section-inner">
+    <div class="section-tag">CAPABILITY MATRIX</div>
+    <div class="section-title">Skills & <span>Arsenal</span></div>
+    <div class="section-line"></div>
+    <div class="skills-grid">
+      <div class="skill-group">
+        <div class="skill-group-title">OFFENSIVE SECURITY</div>
+        <div class="skill-tags">
+          <span class="skill-tag">Penetration Testing</span>
+          <span class="skill-tag">Red Teaming</span>
+          <span class="skill-tag">VAPT</span>
+          <span class="skill-tag">Exploit Dev</span>
+          <span class="skill-tag">Privilege Escalation</span>
+          <span class="skill-tag">Lateral Movement</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-title">WEB APPLICATION</div>
+        <div class="skill-tags">
+          <span class="skill-tag">OWASP Top 10</span>
+          <span class="skill-tag">Burp Suite Pro</span>
+          <span class="skill-tag">SQL Injection</span>
+          <span class="skill-tag">XSS</span>
+          <span class="skill-tag">SSRF</span>
+          <span class="skill-tag">IDOR</span>
+          <span class="skill-tag">SSTI</span>
+          <span class="skill-tag">XXE</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-title">RECON & OSINT</div>
+        <div class="skill-tags">
+          <span class="skill-tag">Subfinder</span>
+          <span class="skill-tag">Amass</span>
+          <span class="skill-tag">HTTPX</span>
+          <span class="skill-tag">GAU</span>
+          <span class="skill-tag">Waybackurls</span>
+          <span class="skill-tag">Shodan</span>
+          <span class="skill-tag">Nuclei</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-title">NETWORK SECURITY</div>
+        <div class="skill-tags">
+          <span class="skill-tag">Nmap</span>
+          <span class="skill-tag">Metasploit</span>
+          <span class="skill-tag">Nessus</span>
+          <span class="skill-tag">Wireshark</span>
+          <span class="skill-tag">Network Recon</span>
+          <span class="skill-tag">Firewall Evasion</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-title">FRAMEWORKS</div>
+        <div class="skill-tags">
+          <span class="skill-tag">MITRE ATT&amp;CK</span>
+          <span class="skill-tag">OWASP</span>
+          <span class="skill-tag">PTES</span>
+          <span class="skill-tag">CVE Research</span>
+          <span class="skill-tag">Risk Assessment</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-title">AUTOMATION & DEV</div>
+        <div class="skill-tags">
+          <span class="skill-tag">Python</span>
+          <span class="skill-tag">Bash Scripting</span>
+          <span class="skill-tag">Go Tools</span>
+          <span class="skill-tag">API Testing</span>
+          <span class="skill-tag">CTF</span>
+          <span class="skill-tag">Report Writing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CERTIFICATIONS -->
+<section id="certs" style="background: var(--bg2);">
+  <div class="section-inner">
+    <div class="section-tag">VERIFIED CREDENTIALS</div>
+    <div class="section-title">Certi<span>fications</span></div>
+    <div class="section-line"></div>
+    <div class="certs-grid">
+
+      <a class="cert-card" href="https://aspen.eccouncil.org/Badge?a=Fr3hvt27MUbP5mXEvQ8Cm31nqIGZnLmZlztsLZJBIZ0=" target="_blank" rel="noopener">
+        <div class="cert-link-icon">↗</div>
+        <div class="cert-card-top">
+          <div class="cert-issuer">EC-COUNCIL</div>
+          <div class="cert-name">CEH MASTER</div>
+          <div class="cert-full">Certified Ethical Hacker — Master</div>
+        </div>
+        <div class="cert-card-bottom">
+          <span class="cert-date">07 NOV 2025 · #ECC7528193406</span>
+          <span class="cert-badge">MASTER</span>
+        </div>
+      </a>
+
+      <a class="cert-card" href="https://certs.ine.com/f0b84321-f4f9-47ae-8ade-ea283c18897d#acc.VNu6T0hi" target="_blank" rel="noopener">
+        <div class="cert-link-icon">↗</div>
+        <div class="cert-card-top">
+          <div class="cert-issuer">INE SECURITY</div>
+          <div class="cert-name">eJPT v2</div>
+          <div class="cert-full">Junior Penetration Tester</div>
+        </div>
+        <div class="cert-card-bottom">
+          <span class="cert-date">15 MAR 2024 · #97888361</span>
+          <span class="cert-badge">CERTIFIED</span>
+        </div>
+      </a>
+
+      <a class="cert-card" href="https://www.credly.com/badges/88767645-7414-438e-8f5f-984dc1a6c38b/linked_in_profile" target="_blank" rel="noopener">
+        <div class="cert-link-icon">↗</div>
+        <div class="cert-card-top">
+          <div class="cert-issuer">TRYHACKME</div>
+          <div class="cert-name">PT1</div>
+          <div class="cert-full">Junior Penetration Tester</div>
+        </div>
+        <div class="cert-card-bottom">
+          <span class="cert-date">27 AUG 2025 · THM-68ad...</span>
+          <span class="cert-badge">CERTIFIED</span>
+        </div>
+      </a>
+
+      <a class="cert-card" href="https://candidate.speedexam.net/certificate.aspx?SSTATE=am4131EniU8ntjp4bO5mXVncAQIMODux/GCC/ldVnW2GcCJAsGqFGcANKdO8WRsvWhR51jNVRsUjxRxfhn9p0bTzjXdUyH+RJYdcXH/deT8=" target="_blank" rel="noopener">
+        <div class="cert-link-icon">↗</div>
+        <div class="cert-card-top">
+          <div class="cert-issuer">THE SECOPS GROUP</div>
+          <div class="cert-name">CAP v2</div>
+          <div class="cert-full">Certified AppSec Practitioner</div>
+        </div>
+        <div class="cert-card-bottom">
+          <span class="cert-date">19 SEP 2024 · #9111432</span>
+          <span class="cert-badge">ESSENTIALS</span>
+        </div>
+      </a>
+
+      <a class="cert-card" href="https://candidate.speedexam.net/certificate.aspx?SSTATE=am4131EniU8ntjp4bO5mXZS/e6myrlRjOOxUGfOHRubMZM5eq4L5WukKgpW9FtcAUe7huDJ8mjKPrUJq7Kj7rMmZKEvuei36DuwU/aYRlVk=" target="_blank" rel="noopener">
+        <div class="cert-link-icon">↗</div>
+        <div class="cert-card-top">
+          <div class="cert-issuer">THE SECOPS GROUP</div>
+          <div class="cert-name">CNSP</div>
+          <div class="cert-full">Certified Network Security Practitioner</div>
+        </div>
+        <div class="cert-card-bottom">
+          <span class="cert-date">25 NOV 2025 · #10779229</span>
+          <span class="cert-badge cert-merit">WITH MERIT</span>
+        </div>
+      </a>
+
+      <a class="cert-card" href="https://candidate.speedexam.net/certificate.aspx?SSTATE=am4131EniU8ntjp4bO5mXU2sCcMx6gJk/eQAzn7lS2qo/JjOvS/SidVb13sxpZCE1mIc53W11UczbDlPN5yQ9y3788TcymCDWRGOQm5nKUg=" target="_blank" rel="noopener">
+        <div class="cert-link-icon">↗</div>
+        <div class="cert-card-top">
+          <div class="cert-issuer">THE SECOPS GROUP</div>
+          <div class="cert-name">CSEDP</div>
+          <div class="cert-full">Certified Social Engineering Defense Practitioner</div>
+        </div>
+        <div class="cert-card-bottom">
+          <span class="cert-date">01 FEB 2026 · #10956375</span>
+          <span class="cert-badge cert-merit">WITH MERIT</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- BUG FINDINGS -->
+<section id="bugs" class="bugs-section">
+  <div class="section-inner">
+    <div class="section-tag">RESPONSIBLE DISCLOSURE</div>
+    <div class="section-title">Bug <span>Findings</span></div>
+    <div class="section-line"></div>
+
+    <div class="bugs-grid">
+      <div class="bug-card">
+        <div class="bug-icon">⚡</div>
+        <div class="bug-name">Cross-Site Scripting</div>
+        <div class="bug-severity sev-high">// HIGH SEVERITY</div>
+      </div>
+      <div class="bug-card">
+        <div class="bug-icon">🔒</div>
+        <div class="bug-name">Broken Access Control</div>
+        <div class="bug-severity sev-critical">// CRITICAL</div>
+      </div>
+      <div class="bug-card">
+        <div class="bug-icon">🗂️</div>
+        <div class="bug-name">IDOR</div>
+        <div class="bug-severity sev-critical">// CRITICAL</div>
+      </div>
+      <div class="bug-card">
+        <div class="bug-icon">📡</div>
+        <div class="bug-name">Host Header Injection</div>
+        <div class="bug-severity sev-high">// HIGH SEVERITY</div>
+      </div>
+      <div class="bug-card">
+        <div class="bug-icon">📁</div>
+        <div class="bug-name">Directory Listing</div>
+        <div class="bug-severity sev-medium">// MEDIUM</div>
+      </div>
+      <div class="bug-card">
+        <div class="bug-icon">💉</div>
+        <div class="bug-name">HTML Injection</div>
+        <div class="bug-severity sev-medium">// MEDIUM</div>
+      </div>
+      <div class="bug-card">
+        <div class="bug-icon">🔍</div>
+        <div class="bug-name">Critical Info Disclosure</div>
+        <div class="bug-severity sev-critical">// CRITICAL</div>
+      </div>
+      <div class="bug-card">
+        <div class="bug-icon">↪️</div>
+        <div class="bug-name">Open Redirect</div>
+        <div class="bug-severity sev-medium">// MEDIUM</div>
+      </div>
+    </div>
+
+    <!-- Hall of Fame -->
+    <div class="section-tag" style="margin-top:3rem">HALL OF FAME</div>
+    <div class="section-title" style="font-size:1.5rem">Recognition & <span>Acknowledgments</span></div>
+    <div class="section-line"></div>
+    <div class="hof-grid">
+      <div class="hof-card">
+        <div class="hof-icon">🏆</div>
+        <div>
+          <div class="hof-org">CERT-IN</div>
+          <div class="hof-desc">// Hall of Fame — Indian Computer Emergency Response Team<br>Responsible disclosure recognized by CERT-In</div>
+        </div>
+      </div>
+      <div class="hof-card">
+        <div class="hof-icon">🛡️</div>
+        <div>
+          <div class="hof-org">NCIIPC</div>
+          <div class="hof-desc">// National Critical Information Infrastructure Protection Centre<br>Acknowledged for responsible vulnerability disclosure</div>
+        </div>
+      </div>
+      <div class="hof-card">
+        <div class="hof-icon">📷</div>
+        <div>
+          <div class="hof-org">CANON</div>
+          <div class="hof-desc">// Security Acknowledgment<br>Recognized by Canon Inc. for responsible disclosure</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FUTURE TARGETS -->
+<section id="targets" class="targets-section">
+  <div class="section-inner">
+    <div class="section-tag">OPERATION ROADMAP</div>
+    <div class="section-title">Future <span>Targets</span></div>
+    <div class="section-line"></div>
+    <div class="targets-grid">
+      <div class="target-card">
+        <div class="target-name">PNPT</div>
+        <div class="target-full">Practical Network Penetration Tester</div>
+        <div class="target-desc">// TCM Security · Full network pentest simulation</div>
+      </div>
+      <div class="target-card">
+        <div class="target-name">CRTP</div>
+        <div class="target-full">Certified Red Team Professional</div>
+        <div class="target-desc">// Altered Security · Active Directory attack chains</div>
+      </div>
+      <div class="target-card">
+        <div class="target-name">OSCP</div>
+        <div class="target-full">Offensive Security Certified Professional</div>
+        <div class="target-desc">// OffSec · Industry gold standard · 24hr exam</div>
+      </div>
+    </div>
+    <div class="hex-divider" style="margin-top:3rem">▶ MORE CERTIFICATIONS TO BE ADDED SOON ◀</div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="footer-logo">RAVISHANKAR M</div>
+  <p class="footer-text">
+    <span>[ SECURITY ENGINEER ]</span> · Chennai, India<br>
+    CEH Master · eJPT · PT1 · CAP · CNSP · CSEDP<br><br>
+    <span>// Built with intent. Secured by design.</span>
+  </p>
+</footer>
+
+<script>
+// Custom cursor
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+  setTimeout(() => {
+    ring.style.left = e.clientX + 'px';
+    ring.style.top = e.clientY + 'px';
+  }, 60);
+});
+document.querySelectorAll('a, button').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.transform = 'translate(-50%,-50%) scale(2)'; });
+  el.addEventListener('mouseleave', () => { cursor.style.transform = 'translate(-50%,-50%) scale(1)'; });
+});
+
+// Matrix rain
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const cols = Math.floor(canvas.width / 16);
+const drops = Array(cols).fill(1);
+const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホ01ABCDEF!@#$%^&*<>/\\|{}[]';
+
+function drawMatrix() {
+  ctx.fillStyle = 'rgba(2,13,6,0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#00ff41';
+  ctx.font = '13px Share Tech Mono';
+  drops.forEach((y, x) => {
+    const ch = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillText(ch, x * 16, y * 16);
+    if (y * 16 > canvas.height && Math.random() > 0.975) drops[x] = 0;
+    drops[x]++;
+  });
+}
+setInterval(drawMatrix, 55);
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+</body>
+</html>
